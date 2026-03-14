@@ -312,3 +312,101 @@ def project_to_src_config(project: Project) -> dict:
         })
 
     return config
+
+
+def load_src_config(path: str) -> Project:
+    """Load a StarRailCopilot native config file and convert to Project."""
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(f"Config file not found: {path}")
+
+    with open(path, "r", encoding="utf-8") as f:
+        if path.suffix in [".yaml", ".yml"]:
+            data = yaml.safe_load(f)
+        else:
+            data = json.load(f)
+
+    return project_from_src_config(data, path.stem)
+
+
+def project_from_src_config(data: dict, name: str = "imported") -> Project:
+    """Convert StarRailCopilot native config dict to Project."""
+    project = create_project(name)
+
+    alas = data.get("Alas", {})
+    emulator = alas.get("Emulator", {})
+    project.emulator = EmulatorConfig(
+        serial=emulator.get("Serial", "auto"),
+        game_client=emulator.get("GameClient", "android"),
+        package_name=emulator.get("PackageName", "auto"),
+        game_language=emulator.get("GameLanguage", "auto"),
+        screenshot_method=emulator.get("ScreenshotMethod", "auto"),
+        control_method=emulator.get("ControlMethod", "MaaTouch"),
+    )
+
+    task_names = ["Dungeon", "DailyQuest", "BattlePass", "Assignment",
+                  "Rogue", "Freebies", "DataUpdate", "Weekly", "Ornament"]
+    for task_name in task_names:
+        if task_name in data:
+            scheduler = data[task_name].get("Scheduler", {})
+            project.tasks[task_name] = TaskConfig(
+                name=task_name,
+                enable=scheduler.get("Enable", False),
+                command=scheduler.get("Command", task_name),
+                server_update=scheduler.get("ServerUpdate", "04:00"),
+            )
+
+    if "Dungeon" in data:
+        dungeon = data["Dungeon"].get("Dungeon", {})
+        support = data["Dungeon"].get("DungeonSupport", {})
+        stamina = data["Dungeon"].get("TrailblazePower", {})
+        project.dungeon = DungeonConfig(
+            name=dungeon.get("Name", "Calyx_Golden_Treasures"),
+            team=dungeon.get("Team", 1),
+            use_support=support.get("Use", "do_not_use") != "do_not_use",
+            support_character=support.get("Character", ""),
+            stamina_fuel=stamina.get("UseFuel", False),
+        )
+
+    if "Rogue" in data:
+        rogue_world = data["Rogue"].get("RogueWorld", {})
+        project.rogue = RogueConfig(
+            world=rogue_world.get("World", "Simulated_Universe_World_1"),
+            path=rogue_world.get("Path", "Preservation"),
+            team=rogue_world.get("Team") or 1,
+            bonus=rogue_world.get("Bonus") is not None,
+        )
+
+    if "Weekly" in data:
+        weekly = data["Weekly"].get("Weekly", {})
+        project.tasks["Weekly"] = TaskConfig(
+            name="Weekly",
+            enable=data["Weekly"].get("Scheduler", {}).get("Enable", False),
+            command="Weekly",
+        )
+
+    if "Ornament" in data:
+        ornament = data["Ornament"].get("Ornament", {})
+        project.tasks["Ornament"] = TaskConfig(
+            name="Ornament",
+            enable=data["Ornament"].get("Scheduler", {}).get("Enable", False),
+            command="Ornament",
+        )
+
+    project.metadata["source"] = "src_config"
+    project.metadata["imported_at"] = datetime.now().isoformat()
+
+    return project
+
+
+def save_as_src_config(project: Project, path: str) -> str:
+    """Save project as StarRailCopilot native config format."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    config = project_to_src_config(project)
+
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(config, f, indent=2, ensure_ascii=False)
+
+    return str(path)

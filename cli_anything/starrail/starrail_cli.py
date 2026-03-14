@@ -18,6 +18,8 @@ from .core import (
     create_project,
     load_project,
     save_project,
+    load_src_config,
+    save_as_src_config,
     TaskRunner,
     TaskStatus,
 )
@@ -122,6 +124,88 @@ def load(ctx, path):
             _output_json({"status": "error", "error": str(e)})
         else:
             skin.error(f"Failed to load project: {e}")
+        sys.exit(1)
+
+
+@cli.command("import")
+@click.argument("path", type=click.Path(exists=True))
+@click.option("--output", "-o", type=click.Path(), help="Output file path for CLI project")
+@click.pass_context
+def import_config(ctx, path, output):
+    """Import a StarRailCopilot native config file."""
+    session = ctx.obj["session"]
+    json_out = ctx.obj.get("json_output", False)
+
+    try:
+        project = load_src_config(path)
+        session.project = project
+        ctx.obj["project_path"] = None
+
+        if output:
+            save_path = save_project(project, output)
+            ctx.obj["project_path"] = save_path
+
+        if json_out:
+            result = {
+                "status": "imported",
+                "source": path,
+                "project": project.to_dict(),
+            }
+            if output:
+                result["saved_to"] = save_path
+            _output_json(result)
+        else:
+            skin.success(f"Imported config: {path}")
+            skin.status("Name", project.name)
+            skin.status("Emulator Serial", project.emulator.serial)
+            skin.status("Dungeon", project.dungeon.name)
+            skin.status("Tasks Enabled", ", ".join(
+                k for k, v in project.tasks.items() if v.enable
+            ) or "None")
+            if output:
+                skin.status("Saved To", save_path)
+    except Exception as e:
+        if json_out:
+            _output_json({"status": "error", "error": str(e)})
+        else:
+            skin.error(f"Failed to import config: {e}")
+        sys.exit(1)
+
+
+@cli.command("export")
+@click.option("--output", "-o", type=click.Path(), help="Output file path")
+@click.pass_context
+def export_config(ctx, output):
+    """Export current project as StarRailCopilot native config."""
+    session = ctx.obj["session"]
+    json_out = ctx.obj.get("json_output", False)
+
+    if not session.project:
+        if json_out:
+            _output_json({"status": "error", "error": "No project loaded"})
+        else:
+            skin.error("No project loaded")
+        sys.exit(1)
+
+    if not output:
+        if json_out:
+            _output_json({"status": "error", "error": "Output path required. Use -o to specify."})
+        else:
+            skin.error("Output path required. Use -o to specify.")
+        sys.exit(1)
+
+    try:
+        path = save_as_src_config(session.project, output)
+
+        if json_out:
+            _output_json({"status": "exported", "path": path})
+        else:
+            skin.success(f"Exported to: {path}")
+    except Exception as e:
+        if json_out:
+            _output_json({"status": "error", "error": str(e)})
+        else:
+            skin.error(f"Failed to export: {e}")
         sys.exit(1)
 
 
@@ -632,6 +716,8 @@ def repl(ctx, project_path):
     commands = {
         "new <name>": "Create a new project",
         "load <path>": "Load a project file",
+        "import <path> [output]": "Import StarRailCopilot native config",
+        "export <path>": "Export as StarRailCopilot native config",
         "save [path]": "Save current project",
         "info": "Show project information",
         "status": "Show session status",
@@ -691,6 +777,17 @@ def repl(ctx, project_path):
                     skin.error("Usage: load <path>")
                 else:
                     ctx.invoke(load, path=parts[1])
+            elif cmd == "import":
+                if len(parts) < 2:
+                    skin.error("Usage: import <path> [output]")
+                else:
+                    output = parts[2] if len(parts) > 2 else None
+                    ctx.invoke(import_config, path=parts[1], output=output)
+            elif cmd == "export":
+                if len(parts) < 2:
+                    skin.error("Usage: export <path>")
+                else:
+                    ctx.invoke(export_config, output=parts[1])
             elif cmd == "save":
                 output = parts[1] if len(parts) > 1 else None
                 ctx.invoke(save, output=output)
