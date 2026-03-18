@@ -14,13 +14,36 @@ from cli_anything.starrail.core.project import (
     EmulatorConfig,
     DungeonConfig,
     RogueConfig,
+    WeeklyConfig,
+    OrnamentConfig,
     create_project,
     load_project,
     save_project,
     project_to_src_config,
+    load_src_config,
 )
 from cli_anything.starrail.core.session import Session, SessionState, HistoryEntry
 from cli_anything.starrail.core.task import TaskRunner, TaskStatus, TaskResult
+from cli_anything.starrail.core.version import (
+    VersionInfo,
+    parse_version,
+    get_src_version,
+    check_compatibility,
+    detect_src_features,
+    get_repo_root,
+)
+from cli_anything.starrail.core.mapping import (
+    EMULATOR_MAPPINGS,
+    DUNGEON_MAPPINGS,
+    ROGUE_MAPPINGS,
+    TASK_METHOD_MAPPINGS,
+    normalize_task_name,
+    get_task_method,
+    get_nested_value,
+    set_nested_value,
+    apply_mappings_to_cli,
+    apply_mappings_to_src,
+)
 
 
 class TestTaskConfig:
@@ -101,8 +124,10 @@ class TestProject:
     def test_project_default_tasks(self):
         project = create_project()
         assert "Dungeon" in project.tasks
-        assert "Daily" in project.tasks
+        assert "DailyQuest" in project.tasks
         assert "Rogue" in project.tasks
+        assert "Weekly" in project.tasks
+        assert "Ornament" in project.tasks
 
     def test_project_to_dict(self):
         project = create_project("test")
@@ -173,6 +198,105 @@ class TestProjectToSrcConfig:
         assert config["Alas"]["Emulator"]["Serial"] == "127.0.0.1:5555"
         assert "Dungeon" in config
         assert config["Dungeon"]["Scheduler"]["Enable"] is True
+
+    def test_conversion_with_version(self):
+        project = create_project("version_test")
+        config = project_to_src_config(project)
+        assert "_version" in config
+        assert config["_version"] == "1.0.0"
+
+
+class TestMapping:
+    def test_get_nested_value(self):
+        data = {"a": {"b": {"c": "value"}}}
+        assert get_nested_value(data, ("a", "b", "c")) == "value"
+        assert get_nested_value(data, ("a", "b", "d"), "default") == "default"
+        assert get_nested_value(data, ("x",), "default") == "default"
+
+    def test_set_nested_value(self):
+        data = {}
+        set_nested_value(data, ("a", "b", "c"), "value")
+        assert data["a"]["b"]["c"] == "value"
+
+    def test_apply_mappings_to_cli(self):
+        src_config = {
+            "Alas": {
+                "Emulator": {
+                    "Serial": "test_serial",
+                    "GameClient": "android",
+                }
+            }
+        }
+        result = apply_mappings_to_cli(src_config, EMULATOR_MAPPINGS)
+        assert result["serial"] == "test_serial"
+        assert result["game_client"] == "android"
+
+    def test_apply_mappings_to_src(self):
+        cli_config = {
+            "serial": "new_serial",
+            "game_client": "cloud_android",
+        }
+        result = apply_mappings_to_src(cli_config, EMULATOR_MAPPINGS)
+        assert result["Alas"]["Emulator"]["Serial"] == "new_serial"
+        assert result["Alas"]["Emulator"]["GameClient"] == "cloud_android"
+
+    def test_normalize_task_name(self):
+        assert normalize_task_name("Daily") == "DailyQuest"
+        assert normalize_task_name("Dungeon") == "Dungeon"
+        assert normalize_task_name("Rogue") == "Rogue"
+
+    def test_get_task_method(self):
+        assert get_task_method("dungeon") == "dungeon"
+        assert get_task_method("daily") == "daily_quest"
+        assert get_task_method("daily-quest") == "daily_quest"
+        assert get_task_method("battle_pass") == "battle_pass"
+
+    def test_task_method_mappings(self):
+        assert "dungeon" in TASK_METHOD_MAPPINGS
+        assert "rogue" in TASK_METHOD_MAPPINGS
+        assert "daily_quest" in TASK_METHOD_MAPPINGS
+
+
+class TestVersion:
+    def test_parse_version(self):
+        assert parse_version("1.0.0") == (1, 0, 0)
+        assert parse_version("v2.1.3") == (2, 1, 3)
+        assert parse_version("1.0") == (1, 0, 0)
+        assert parse_version("invalid") == (0, 0, 0)
+
+    def test_version_info(self):
+        ver = VersionInfo("1.2.3", 1, 2, 3, "test", datetime.now())
+        assert ver.version == "1.2.3"
+        assert ver.major == 1
+        assert ver.minor == 2
+        assert ver.patch == 3
+        assert str(ver) == "1.2.3"
+
+    def test_version_info_comparison(self):
+        v1 = VersionInfo("1.0.0", 1, 0, 0, "test", datetime.now())
+        v2 = VersionInfo("1.0.0", 1, 0, 0, "test", datetime.now())
+        v3 = VersionInfo("2.0.0", 2, 0, 0, "test", datetime.now())
+
+        assert v1.is_compatible_with(v2) is True
+        assert v1.is_compatible_with(v3) is False
+
+    def test_get_repo_root(self):
+        root = get_repo_root()
+        assert root.exists()
+        assert (root / "src.py").exists()
+
+    def test_detect_src_features(self):
+        root = get_repo_root()
+        features = detect_src_features(root)
+        assert "tasks" in features
+        assert "dungeon" in features["tasks"] or "rogue" in features["tasks"]
+
+    def test_check_compatibility(self):
+        root = get_repo_root()
+        report = check_compatibility(root, "1.0.0")
+        assert report.cli_version.version == "1.0.0"
+        assert isinstance(report.warnings, list)
+        assert isinstance(report.features, dict)
 
 
 class TestSession:

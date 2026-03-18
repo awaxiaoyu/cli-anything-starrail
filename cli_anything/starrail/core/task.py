@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Callable, Optional
 
 from .project import Project, project_to_src_config
+from .mapping import TASK_METHOD_MAPPINGS, get_task_method
 
 
 class TaskStatus(Enum):
@@ -208,21 +209,7 @@ src.run("{task_method}")
         return result
 
     def _task_name_to_method(self, task_name: str) -> str:
-        mapping = {
-            "dungeon": "dungeon",
-            "weekly": "weekly",
-            "daily_quest": "daily_quest",
-            "battle_pass": "battle_pass",
-            "assignment": "assignment",
-            "data_update": "data_update",
-            "freebies": "freebies",
-            "rogue": "rogue",
-            "ornament": "ornament",
-            "benchmark": "benchmark",
-            "daemon": "daemon",
-            "planner_scan": "planner_scan",
-        }
-        return mapping.get(task_name.lower(), task_name.lower())
+        return get_task_method(task_name)
 
     def run_task_async(self, task_name: str, config_name: str = "cli_temp",
                        callback: Optional[Callable[[TaskResult], None]] = None) -> threading.Thread:

@@ -14,6 +14,22 @@ from typing import Any, Optional
 
 import yaml
 
+from .mapping import (
+    EMULATOR_MAPPINGS,
+    DUNGEON_MAPPINGS,
+    ROGUE_MAPPINGS,
+    WEEKLY_MAPPINGS,
+    ORNAMENT_MAPPINGS,
+    TASK_SCHEDULER_MAPPINGS,
+    DEFAULT_TASKS,
+    CONFIG_SCHEMA_VERSION,
+    apply_mappings_to_cli,
+    apply_mappings_to_src,
+    get_nested_value,
+    set_nested_value,
+    normalize_task_name,
+)
+
 
 @dataclass
 class TaskConfig:
@@ -82,15 +98,22 @@ class EmulatorConfig:
             control_method=data.get("control_method", "MaaTouch"),
         )
 
+    @classmethod
+    def from_src_config(cls, src_config: dict) -> "EmulatorConfig":
+        data = apply_mappings_to_cli(src_config, EMULATOR_MAPPINGS)
+        return cls(**data)
+
 
 @dataclass
 class DungeonConfig:
-    name: str = "Calyx_Golden_Treasures"
+    name: str = "Calyx_Golden_Treasures_Jarilo_VI"
     team: int = 1
     use_support: bool = False
-    support_character: str = ""
+    support_character: str = "FirstCharacter"
     stamina_consume: int = 0
     stamina_fuel: bool = False
+    extract_reserved: bool = False
+    fuel_reserve: int = 5
 
     def to_dict(self) -> dict:
         return {
@@ -100,28 +123,38 @@ class DungeonConfig:
             "support_character": self.support_character,
             "stamina_consume": self.stamina_consume,
             "stamina_fuel": self.stamina_fuel,
+            "extract_reserved": self.extract_reserved,
+            "fuel_reserve": self.fuel_reserve,
         }
 
     @classmethod
     def from_dict(cls, data: dict) -> "DungeonConfig":
         return cls(
-            name=data.get("name", "Calyx_Golden_Treasures"),
+            name=data.get("name", "Calyx_Golden_Treasures_Jarilo_VI"),
             team=data.get("team", 1),
             use_support=data.get("use_support", False),
-            support_character=data.get("support_character", ""),
+            support_character=data.get("support_character", "FirstCharacter"),
             stamina_consume=data.get("stamina_consume", 0),
             stamina_fuel=data.get("stamina_fuel", False),
+            extract_reserved=data.get("extract_reserved", False),
+            fuel_reserve=data.get("fuel_reserve", 5),
         )
+
+    @classmethod
+    def from_src_config(cls, src_config: dict) -> "DungeonConfig":
+        data = apply_mappings_to_cli(src_config, DUNGEON_MAPPINGS)
+        return cls(**data)
 
 
 @dataclass
 class RogueConfig:
-    world: str = "Simulated_Universe_World_1"
-    path: str = "Preservation"
+    world: str = "Simulated_Universe_World_8"
+    path: str = "The_Hunt"
     team: int = 1
     use_support: bool = False
-    support_character: str = ""
+    support_character: str = "FirstCharacter"
     bonus: bool = False
+    domain_strategy: str = "combat"
 
     def to_dict(self) -> dict:
         return {
@@ -131,18 +164,88 @@ class RogueConfig:
             "use_support": self.use_support,
             "support_character": self.support_character,
             "bonus": self.bonus,
+            "domain_strategy": self.domain_strategy,
         }
 
     @classmethod
     def from_dict(cls, data: dict) -> "RogueConfig":
         return cls(
-            world=data.get("world", "Simulated_Universe_World_1"),
-            path=data.get("path", "Preservation"),
+            world=data.get("world", "Simulated_Universe_World_8"),
+            path=data.get("path", "The_Hunt"),
             team=data.get("team", 1),
             use_support=data.get("use_support", False),
-            support_character=data.get("support_character", ""),
+            support_character=data.get("support_character", "FirstCharacter"),
             bonus=data.get("bonus", False),
+            domain_strategy=data.get("domain_strategy", "combat"),
         )
+
+    @classmethod
+    def from_src_config(cls, src_config: dict) -> "RogueConfig":
+        data = apply_mappings_to_cli(src_config, ROGUE_MAPPINGS)
+        return cls(**data)
+
+
+@dataclass
+class WeeklyConfig:
+    name: str = "Echo_of_War_Destruction_Beginning"
+    team: int = 1
+    use_support: bool = False
+    support_character: str = "FirstCharacter"
+
+    def to_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "team": self.team,
+            "use_support": self.use_support,
+            "support_character": self.support_character,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "WeeklyConfig":
+        return cls(
+            name=data.get("name", "Echo_of_War_Destruction_Beginning"),
+            team=data.get("team", 1),
+            use_support=data.get("use_support", False),
+            support_character=data.get("support_character", "FirstCharacter"),
+        )
+
+    @classmethod
+    def from_src_config(cls, src_config: dict) -> "WeeklyConfig":
+        data = apply_mappings_to_cli(src_config, WEEKLY_MAPPINGS)
+        return cls(**data)
+
+
+@dataclass
+class OrnamentConfig:
+    dungeon: str = "Divergent_Universe_Eternal_Comedy"
+    team: int = 0
+    use_immersifier: bool = True
+    double_event: bool = True
+    use_stamina: bool = False
+
+    def to_dict(self) -> dict:
+        return {
+            "dungeon": self.dungeon,
+            "team": self.team,
+            "use_immersifier": self.use_immersifier,
+            "double_event": self.double_event,
+            "use_stamina": self.use_stamina,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "OrnamentConfig":
+        return cls(
+            dungeon=data.get("dungeon", "Divergent_Universe_Eternal_Comedy"),
+            team=data.get("team", 0),
+            use_immersifier=data.get("use_immersifier", True),
+            double_event=data.get("double_event", True),
+            use_stamina=data.get("use_stamina", False),
+        )
+
+    @classmethod
+    def from_src_config(cls, src_config: dict) -> "OrnamentConfig":
+        data = apply_mappings_to_cli(src_config, ORNAMENT_MAPPINGS)
+        return cls(**data)
 
 
 @dataclass
@@ -153,6 +256,8 @@ class Project:
     emulator: EmulatorConfig = field(default_factory=EmulatorConfig)
     dungeon: DungeonConfig = field(default_factory=DungeonConfig)
     rogue: RogueConfig = field(default_factory=RogueConfig)
+    weekly: WeeklyConfig = field(default_factory=WeeklyConfig)
+    ornament: OrnamentConfig = field(default_factory=OrnamentConfig)
     tasks: dict[str, TaskConfig] = field(default_factory=dict)
     metadata: dict[str, Any] = field(default_factory=dict)
 
@@ -161,11 +266,7 @@ class Project:
             self._init_default_tasks()
 
     def _init_default_tasks(self):
-        default_tasks = [
-            "Dungeon", "Daily", "BattlePass", "Assignment",
-            "Rogue", "Freebies", "DataUpdate", "Weekly"
-        ]
-        for task_name in default_tasks:
+        for task_name in DEFAULT_TASKS:
             self.tasks[task_name] = TaskConfig(name=task_name, command=task_name)
 
     def to_dict(self) -> dict:
@@ -176,6 +277,8 @@ class Project:
             "emulator": self.emulator.to_dict(),
             "dungeon": self.dungeon.to_dict(),
             "rogue": self.rogue.to_dict(),
+            "weekly": self.weekly.to_dict(),
+            "ornament": self.ornament.to_dict(),
             "tasks": {k: v.to_dict() for k, v in self.tasks.items()},
             "metadata": self.metadata,
         }
@@ -205,6 +308,8 @@ class Project:
             emulator=EmulatorConfig.from_dict(data.get("emulator", {})),
             dungeon=DungeonConfig.from_dict(data.get("dungeon", {})),
             rogue=RogueConfig.from_dict(data.get("rogue", {})),
+            weekly=WeeklyConfig.from_dict(data.get("weekly", {})),
+            ornament=OrnamentConfig.from_dict(data.get("ornament", {})),
             tasks=tasks,
             metadata=data.get("metadata", {}),
         )
@@ -251,71 +356,53 @@ def save_project(project: Project, path: str) -> str:
 
 
 def project_to_src_config(project: Project) -> dict:
-    config = {
+    config: dict = {
+        "_version": CONFIG_SCHEMA_VERSION,
         "Alas": {
-            "Emulator": {
-                "Serial": project.emulator.serial,
-                "GameClient": project.emulator.game_client,
-                "PackageName": project.emulator.package_name,
-                "GameLanguage": project.emulator.game_language,
-                "ScreenshotMethod": project.emulator.screenshot_method,
-                "ControlMethod": project.emulator.control_method,
-            },
+            "Emulator": {},
             "Optimization": {
                 "WhenTaskQueueEmpty": "goto_main",
             },
         },
     }
 
+    emulator_data = {
+        "serial": project.emulator.serial,
+        "game_client": project.emulator.game_client,
+        "package_name": project.emulator.package_name,
+        "game_language": project.emulator.game_language,
+        "screenshot_method": project.emulator.screenshot_method,
+        "control_method": project.emulator.control_method,
+    }
+    config = apply_mappings_to_src(emulator_data, EMULATOR_MAPPINGS, config)
+
     for task_name, task_config in project.tasks.items():
-        config[task_name] = {
-            "Scheduler": {
-                "Enable": task_config.enable,
-                "NextRun": task_config.next_run.isoformat() if task_config.next_run else "2020-01-01 00:00:00",
-                "Command": task_config.command,
-                "ServerUpdate": task_config.server_update,
-            },
+        normalized_name = normalize_task_name(task_name)
+        if normalized_name not in config:
+            config[normalized_name] = {}
+        config[normalized_name]["Scheduler"] = {
+            "Enable": task_config.enable,
+            "NextRun": task_config.next_run.isoformat() if task_config.next_run else "2020-01-01 00:00:00",
+            "Command": task_config.command,
+            "ServerUpdate": task_config.server_update,
         }
 
-    if "Dungeon" in project.tasks:
-        config["Dungeon"].update({
-            "Dungeon": {
-                "Name": project.dungeon.name,
-                "Team": project.dungeon.team,
-            },
-            "Support": {
-                "Use": project.dungeon.use_support,
-                "Character": project.dungeon.support_character,
-            },
-            "Stamina": {
-                "Consume": project.dungeon.stamina_consume,
-                "UseFuel": project.dungeon.stamina_fuel,
-            },
-        })
+    dungeon_data = project.dungeon.to_dict()
+    config = apply_mappings_to_src(dungeon_data, DUNGEON_MAPPINGS, config)
 
-    if "Rogue" in project.tasks:
-        config["Rogue"].update({
-            "RogueWorld": {
-                "World": project.rogue.world,
-                "Path": project.rogue.path,
-            },
-            "Team": {
-                "Team": project.rogue.team,
-            },
-            "Support": {
-                "Use": project.rogue.use_support,
-                "Character": project.rogue.support_character,
-            },
-            "Bonus": {
-                "Enable": project.rogue.bonus,
-            },
-        })
+    rogue_data = project.rogue.to_dict()
+    config = apply_mappings_to_src(rogue_data, ROGUE_MAPPINGS, config)
+
+    weekly_data = project.weekly.to_dict()
+    config = apply_mappings_to_src(weekly_data, WEEKLY_MAPPINGS, config)
+
+    ornament_data = project.ornament.to_dict()
+    config = apply_mappings_to_src(ornament_data, ORNAMENT_MAPPINGS, config)
 
     return config
 
 
 def load_src_config(path: str) -> Project:
-    """Load a StarRailCopilot native config file and convert to Project."""
     path = Path(path)
     if not path.exists():
         raise FileNotFoundError(f"Config file not found: {path}")
@@ -330,23 +417,11 @@ def load_src_config(path: str) -> Project:
 
 
 def project_from_src_config(data: dict, name: str = "imported") -> Project:
-    """Convert StarRailCopilot native config dict to Project."""
     project = create_project(name)
 
-    alas = data.get("Alas", {})
-    emulator = alas.get("Emulator", {})
-    project.emulator = EmulatorConfig(
-        serial=emulator.get("Serial", "auto"),
-        game_client=emulator.get("GameClient", "android"),
-        package_name=emulator.get("PackageName", "auto"),
-        game_language=emulator.get("GameLanguage", "auto"),
-        screenshot_method=emulator.get("ScreenshotMethod", "auto"),
-        control_method=emulator.get("ControlMethod", "MaaTouch"),
-    )
+    project.emulator = EmulatorConfig.from_src_config(data)
 
-    task_names = ["Dungeon", "DailyQuest", "BattlePass", "Assignment",
-                  "Rogue", "Freebies", "DataUpdate", "Weekly", "Ornament"]
-    for task_name in task_names:
+    for task_name in DEFAULT_TASKS:
         if task_name in data:
             scheduler = data[task_name].get("Scheduler", {})
             project.tasks[task_name] = TaskConfig(
@@ -357,50 +432,25 @@ def project_from_src_config(data: dict, name: str = "imported") -> Project:
             )
 
     if "Dungeon" in data:
-        dungeon = data["Dungeon"].get("Dungeon", {})
-        support = data["Dungeon"].get("DungeonSupport", {})
-        stamina = data["Dungeon"].get("TrailblazePower", {})
-        project.dungeon = DungeonConfig(
-            name=dungeon.get("Name", "Calyx_Golden_Treasures"),
-            team=dungeon.get("Team", 1),
-            use_support=support.get("Use", "do_not_use") != "do_not_use",
-            support_character=support.get("Character", ""),
-            stamina_fuel=stamina.get("UseFuel", False),
-        )
+        project.dungeon = DungeonConfig.from_src_config(data)
 
     if "Rogue" in data:
-        rogue_world = data["Rogue"].get("RogueWorld", {})
-        project.rogue = RogueConfig(
-            world=rogue_world.get("World", "Simulated_Universe_World_1"),
-            path=rogue_world.get("Path", "Preservation"),
-            team=rogue_world.get("Team") or 1,
-            bonus=rogue_world.get("Bonus") is not None,
-        )
+        project.rogue = RogueConfig.from_src_config(data)
 
     if "Weekly" in data:
-        weekly = data["Weekly"].get("Weekly", {})
-        project.tasks["Weekly"] = TaskConfig(
-            name="Weekly",
-            enable=data["Weekly"].get("Scheduler", {}).get("Enable", False),
-            command="Weekly",
-        )
+        project.weekly = WeeklyConfig.from_src_config(data)
 
     if "Ornament" in data:
-        ornament = data["Ornament"].get("Ornament", {})
-        project.tasks["Ornament"] = TaskConfig(
-            name="Ornament",
-            enable=data["Ornament"].get("Scheduler", {}).get("Enable", False),
-            command="Ornament",
-        )
+        project.ornament = OrnamentConfig.from_src_config(data)
 
     project.metadata["source"] = "src_config"
     project.metadata["imported_at"] = datetime.now().isoformat()
+    project.metadata["src_version"] = data.get("_version", "unknown")
 
     return project
 
 
 def save_as_src_config(project: Project, path: str) -> str:
-    """Save project as StarRailCopilot native config format."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
 
