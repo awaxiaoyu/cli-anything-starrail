@@ -1,4 +1,4 @@
-"""Main CLI entry point for cli-anything-starrail.
+"""Main CLI entry point for StarRailCopilotPro.
 
 Provides both subcommand mode and interactive REPL mode.
 """
@@ -48,13 +48,13 @@ def _format_datetime(dt: Optional[datetime]) -> str:
     return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 
-skin = ReplSkin("starrail", version="1.0.0")
+skin = ReplSkin("starrailcopilotpro", version="1.0.0")
 
 
 @click.group(invoke_without_command=True)
 @click.option("--project", "-p", type=click.Path(), help="Project file path")
 @click.option("--json", "json_output", is_flag=True, help="Output in JSON format")
-@click.version_option(version="1.0.0", prog_name="cli-anything-starrail")
+@click.version_option(version="1.0.0", prog_name="starrailcopilotpro")
 @click.pass_context
 def cli(ctx, project, json_output):
     ctx.ensure_object(dict)

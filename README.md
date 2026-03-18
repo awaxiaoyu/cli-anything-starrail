@@ -1,28 +1,31 @@
-# cli-anything-starrail
+# StarRailCopilotPro
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A stateful CLI interface for [StarRailCopilot](https://github.com/LmeSzinc/StarRailCopilot) that allows AI agents to control Honkai: Star Rail automation without needing the GUI or web interface.
+**[English Documentation](README_EN.md)** | 中文文档
 
-## Features
+[StarRailCopilot](https://github.com/LmeSzinc/StarRailCopilot) 的专业版命令行接口，允许 AI 智能体在没有 GUI 或 Web 界面的情况下控制《崩坏：星穹铁道》自动化。
 
-- **Dual Mode**: Interactive REPL mode and command-line subcommand mode
-- **JSON Output**: Machine-readable output for AI agent consumption via `--json` flag
-- **Stateful Session**: Full undo/redo support for configuration changes
-- **Task Management**: Enable, disable, and run automation tasks
-- **Configuration Management**: Complete control over emulator, dungeon, and rogue settings
-- **Project Files**: Save and load configuration profiles in JSON or YAML format
+## ✨ 功能特性
 
-## Installation
+- **双模式**：交互式 REPL 模式和命令行子命令模式
+- **JSON 输出**：通过 `--json` 标志提供机器可读的输出，便于 AI 智能体消费
+- **有状态会话**：完整的撤销/重做支持
+- **任务管理**：启用、禁用和运行自动化任务
+- **配置管理**：完全控制模拟器、副本和模拟宇宙设置
+- **项目文件**：以 JSON 或 YAML 格式保存和加载配置文件
+- **版本兼容**：自动检测 StarRailCopilot 版本并检查兼容性
 
-### From GitHub
+## 📦 安装
+
+### 从 GitHub 安装
 
 ```bash
 pip install git+https://github.com/awaxiaoyu/cli-anything-starrail.git
 ```
 
-### From Source
+### 从源码安装
 
 ```bash
 git clone https://github.com/awaxiaoyu/cli-anything-starrail.git
@@ -30,55 +33,55 @@ cd cli-anything-starrail
 pip install -e .
 ```
 
-## Prerequisites
+## 🔧 前置条件
 
 - Python 3.10+
-- [StarRailCopilot](https://github.com/LmeSzinc/StarRailCopilot) installed and configured
-- An emulator or device with Honkai: Star Rail installed
-- ADB connection to your emulator/device
+- [StarRailCopilot](https://github.com/LmeSzinc/StarRailCopilot) 已安装并配置
+- 已安装《崩坏：星穹铁道》的模拟器或设备
+- ADB 已连接到模拟器/设备
 
-## Quick Start
+## 🚀 快速开始
 
-### 1. Connect Your Emulator
+### 1. 连接模拟器
 
 ```bash
 # MuMu 12
 adb connect 127.0.0.1:16384
 
-# BlueStacks / LDPlayer
+# 蓝叠 / 雷电
 adb connect 127.0.0.1:5555
 
-# Verify connection
+# 验证连接
 adb devices
 ```
 
-### 2. Create a Configuration
+### 2. 创建配置
 
 ```bash
-# Create new project
-cli-anything-starrail new my_config -o my_config.json
+# 创建新项目
+starrail-pro new my_config -o my_config.json
 
-# Configure emulator
-cli-anything-starrail -p my_config.json emulator set serial 127.0.0.1:16384
+# 配置模拟器
+starrail-pro -p my_config.json emulator set serial 127.0.0.1:16384
 
-# Configure dungeon
-cli-anything-starrail -p my_config.json dungeon set name Calyx_Golden_Treasures
-cli-anything-starrail -p my_config.json dungeon set team 1
+# 配置副本
+starrail-pro -p my_config.json dungeon set name Calyx_Golden_Treasures
+starrail-pro -p my_config.json dungeon set team 1
 
-# Enable and run task
-cli-anything-starrail -p my_config.json task enable Dungeon
-cli-anything-starrail -p my_config.json task run dungeon
+# 启用并运行任务
+starrail-pro -p my_config.json task enable Dungeon
+starrail-pro -p my_config.json task run dungeon
 ```
 
-### 3. Interactive REPL Mode
+### 3. 交互式 REPL 模式
 
 ```bash
-cli-anything-starrail
+starrail-pro
 ```
 
 ```
 ╭──────────────────────────────────────────────────────────────────────╮
-│  ◆  cli-anything · Starrail                                         │
+│  ◆  StarRailCopilotPro                                              │
 │     v1.0.0                                                          │
 │                                                                      │
 │     Type help for commands, quit to exit                            │
@@ -92,86 +95,86 @@ starrail[farming]*> save farming.json
 starrail[farming]> task run dungeon
 ```
 
-## Commands
+## 📖 命令参考
 
-### Project Management
+### 项目管理
 
-| Command | Description |
-|---------|-------------|
-| `new <name>` | Create a new project |
-| `load <path>` | Load a project file |
-| `save [path]` | Save current project |
-| `info` | Show project information |
-| `status` | Show session status |
+| 命令 | 描述 |
+|------|------|
+| `new <name>` | 创建新项目 |
+| `load <path>` | 加载项目文件 |
+| `save [path]` | 保存当前项目 |
+| `info` | 显示项目信息 |
+| `status` | 显示会话状态 |
 
-### Emulator Configuration
+### 模拟器配置
 
-| Command | Description |
-|---------|-------------|
-| `emulator show` | Show emulator configuration |
-| `emulator set <key> <value>` | Set emulator option |
+| 命令 | 描述 |
+|------|------|
+| `emulator show` | 显示模拟器配置 |
+| `emulator set <key> <value>` | 设置模拟器选项 |
 
-**Valid keys**: `serial`, `game_client`, `package_name`, `game_language`, `screenshot_method`, `control_method`
+**有效键名**：`serial`、`game_client`、`package_name`、`game_language`、`screenshot_method`、`control_method`
 
-### Dungeon Configuration
+### 副本配置
 
-| Command | Description |
-|---------|-------------|
-| `dungeon show` | Show dungeon configuration |
-| `dungeon set <key> <value>` | Set dungeon option |
+| 命令 | 描述 |
+|------|------|
+| `dungeon show` | 显示副本配置 |
+| `dungeon set <key> <value>` | 设置副本选项 |
 
-**Valid keys**: `name`, `team`, `use_support`, `support_character`, `stamina_consume`, `stamina_fuel`
+**有效键名**：`name`、`team`、`use_support`、`support_character`、`stamina_consume`、`stamina_fuel`
 
-### Rogue Configuration
+### 模拟宇宙配置
 
-| Command | Description |
-|---------|-------------|
-| `rogue show` | Show rogue configuration |
-| `rogue set <key> <value>` | Set rogue option |
+| 命令 | 描述 |
+|------|------|
+| `rogue show` | 显示模拟宇宙配置 |
+| `rogue set <key> <value>` | 设置模拟宇宙选项 |
 
-**Valid keys**: `world`, `path`, `team`, `use_support`, `support_character`, `bonus`
+**有效键名**：`world`、`path`、`team`、`use_support`、`support_character`、`bonus`
 
-### Task Management
+### 任务管理
 
-| Command | Description |
-|---------|-------------|
-| `task list` | List available tasks |
-| `task enable <name>` | Enable a task |
-| `task disable <name>` | Disable a task |
-| `task run <name>` | Run a task |
+| 命令 | 描述 |
+|------|------|
+| `task list` | 列出可用任务 |
+| `task enable <name>` | 启用任务 |
+| `task disable <name>` | 禁用任务 |
+| `task run <name>` | 运行任务 |
 
-### Session Management
+### 会话管理
 
-| Command | Description |
-|---------|-------------|
-| `undo` | Undo last action |
-| `redo` | Redo last action |
-| `help` | Show help |
-| `quit` | Exit REPL |
+| 命令 | 描述 |
+|------|------|
+| `undo` | 撤销上一步操作 |
+| `redo` | 重做上一步操作 |
+| `help` | 显示帮助 |
+| `quit` | 退出 REPL |
 
-## Available Tasks
+## 🎮 可用任务
 
-| Task | Description |
-|------|-------------|
-| `dungeon` | Run dungeon farming |
-| `weekly` | Run weekly dungeon (Echo of War) |
-| `daily_quest` | Complete daily quests |
-| `battle_pass` | Claim battle pass rewards |
-| `assignment` | Dispatch and claim assignments |
-| `data_update` | Update character/item data |
-| `freebies` | Claim mail and redeem codes |
-| `rogue` | Run Simulated Universe |
-| `ornament` | Run Ornament Extractions |
-| `benchmark` | Run performance benchmark |
-| `daemon` | Run daemon mode (continuous) |
-| `planner_scan` | Scan materials for planner |
+| 任务 | 描述 |
+|------|------|
+| `dungeon` | 副本刷取 |
+| `weekly` | 周本（历战余响） |
+| `daily_quest` | 完成每日任务 |
+| `battle_pass` | 领取无名勋礼奖励 |
+| `assignment` | 委托派遣和领取 |
+| `data_update` | 更新角色/物品数据 |
+| `freebies` | 领取邮件和兑换码 |
+| `rogue` | 模拟宇宙 |
+| `ornament` | 凝滞虚影 |
+| `benchmark` | 性能测试 |
+| `daemon` | 守护进程模式（持续运行） |
+| `planner_scan` | 扫描养成材料 |
 
-## JSON Output (for AI Agents)
+## 🤖 JSON 输出（供 AI 智能体使用）
 
-All commands support the `--json` flag for structured, parseable output:
+所有命令都支持 `--json` 标志，提供结构化的可解析输出：
 
 ```bash
-cli-anything-starrail --json task list
+starrail-pro --json task list
 ```
 
 ```json
@@ -186,7 +189,7 @@ cli-anything-starrail --json task list
 ```
 
 ```bash
-cli-anything-starrail --json -p config.json task run dungeon
+starrail-pro --json -p config.json task run dungeon
 ```
 
 ```json
@@ -202,52 +205,54 @@ cli-anything-starrail --json -p config.json task run dungeon
 }
 ```
 
-## Project Structure
+## 📁 项目结构
 
 ```
-cli-anything-starrail/
-├── setup.py                 # Package installation
-├── STARRAIL.md              # Architecture documentation
+starrailcopilotpro/
+├── setup.py                 # 包安装配置
+├── STARRAIL.md              # 架构文档
 └── cli_anything/
     └── starrail/
         ├── __init__.py
-        ├── __main__.py      # python -m entry point
-        ├── README.md        # Detailed usage guide
-        ├── starrail_cli.py  # Main CLI implementation
+        ├── __main__.py      # python -m 入口
+        ├── README.md        # 详细使用指南
+        ├── starrail_cli.py  # 主 CLI 实现
         ├── core/
-        │   ├── project.py   # Project & configuration management
-        │   ├── session.py   # Session & undo/redo
-        │   └── task.py      # Task execution
+        │   ├── project.py   # 项目和配置管理
+        │   ├── session.py   # 会话和撤销/重做
+        │   ├── task.py      # 任务执行
+        │   ├── mapping.py   # 配置映射
+        │   └── version.py   # 版本检测
         ├── utils/
-        │   └── repl_skin.py # Terminal UI styling
+        │   └── repl_skin.py # 终端 UI 样式
         └── tests/
-            └── test_core.py # Unit tests
+            └── test_core.py # 单元测试
 ```
 
-## Development
+## 🔨 开发
 
-### Run Tests
+### 运行测试
 
 ```bash
 pytest cli_anything/starrail/tests/ -v
 ```
 
-### Install Development Dependencies
+### 安装开发依赖
 
 ```bash
 pip install -e ".[dev]"
 ```
 
-## Integration with AI Agents
+## 🤝 AI 智能体集成
 
-This CLI is designed to be easily used by AI agents:
+此 CLI 专为 AI 智能体设计，易于使用：
 
-1. **Discovery**: Use `--help` on any command to discover available options
-2. **JSON Output**: Use `--json` flag for structured, parseable output
-3. **State Inspection**: Use `info` and `status` commands to understand current state
-4. **Error Handling**: Errors are returned in JSON format with clear messages
+1. **发现**：在任何命令上使用 `--help` 发现可用选项
+2. **JSON 输出**：使用 `--json` 标志获取结构化的可解析输出
+3. **状态检查**：使用 `info` 和 `status` 命令了解当前状态
+4. **错误处理**：错误以 JSON 格式返回，带有清晰的消息
 
-### Example AI Agent Workflow
+### AI 智能体工作流示例
 
 ```python
 import subprocess
@@ -255,31 +260,31 @@ import json
 
 def run_cli(args: list[str]) -> dict:
     result = subprocess.run(
-        ["cli-anything-starrail", "--json"] + args,
+        ["starrail-pro", "--json"] + args,
         capture_output=True,
         text=True
     )
     return json.loads(result.stdout)
 
-# Create and configure
+# 创建并配置
 run_cli(["new", "farming", "-o", "farming.json"])
 run_cli(["-p", "farming.json", "emulator", "set", "serial", "127.0.0.1:16384"])
 run_cli(["-p", "farming.json", "task", "enable", "Dungeon"])
 
-# Run task
+# 运行任务
 result = run_cli(["-p", "farming.json", "task", "run", "dungeon"])
-print(f"Status: {result['status']}")
+print(f"状态: {result['status']}")
 ```
 
-## Related Projects
+## 🔗 相关项目
 
-- [StarRailCopilot](https://github.com/LmeSzinc/StarRailCopilot) - The main automation project
-- [CLI-Anything](https://github.com/your-repo/cli-anything) - The CLI framework pattern
+- [StarRailCopilot](https://github.com/LmeSzinc/StarRailCopilot) - 主要的自动化项目
+- [CLI-Anything](https://github.com/your-repo/cli-anything) - CLI 框架模式
 
-## License
+## 📄 许可证
 
-MIT License - See [LICENSE](LICENSE) file for details.
+MIT 许可证 - 详见 [LICENSE](LICENSE) 文件。
 
-## Contributing
+## 🙏 贡献
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+欢迎贡献！请随时提交 Pull Request。
