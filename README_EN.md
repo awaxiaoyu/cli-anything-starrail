@@ -3,7 +3,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-English Documentation | **[中文文档](README.md)**
+中文文档 | **[English Documentation](README_EN.md)**
 
 A professional CLI interface for [StarRailCopilot](https://github.com/LmeSzinc/StarRailCopilot) that allows AI agents to control Honkai: Star Rail automation without needing the GUI or web interface.
 
@@ -95,7 +95,7 @@ starrail[farming]*> save farming.json
 starrail[farming]> task run dungeon
 ```
 
-## 📖 Commands
+## 📖 Command Reference
 
 ### Project Management
 
